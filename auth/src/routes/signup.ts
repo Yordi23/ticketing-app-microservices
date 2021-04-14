@@ -9,7 +9,9 @@ router.post('/api/users/signup', [
 ], (req: Request, res: Response) => {
     const errors = validationResult(req);
 
-    if (!errors.isEmpty()) res.status(400).send(errors.array());
+    if (!errors.isEmpty()) {
+        throw new Error('Invalid credentials');
+    }
 
     const { email, password } = req.body;
 
