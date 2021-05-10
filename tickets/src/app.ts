@@ -9,6 +9,7 @@ import {
 	NotFoundError,
 } from '@yd-ticketing-app/common';
 import { createTicketRouter } from './routes/create';
+import { getTicketRouter } from './routes/get';
 
 const app = express();
 app.set('trust proxy', true);
@@ -23,6 +24,7 @@ app.use(
 app.use(currentUser);
 
 app.use(createTicketRouter);
+app.use(getTicketRouter);
 
 app.all('*', () => {
 	throw new NotFoundError();
