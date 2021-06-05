@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { app } from './app';
+import { natsWrapper } from './nats-wrapper';
 
 const start = async () => {
 	if (!process.env.JWT_KEY || !process.env.MONGO_URI) {
@@ -7,6 +8,11 @@ const start = async () => {
 	}
 
 	try {
+		await natsWrapper.connect(
+			'ticketing',
+			'randomid',
+			'http://nats-srv:4222'
+		);
 		await mongoose.connect(process.env.MONGO_URI, {
 			useNewUrlParser: true,
 			useUnifiedTopology: true,
@@ -17,7 +23,7 @@ const start = async () => {
 		console.error(error);
 	}
 	app.listen(3000, () => {
-		console.log('Listening on port 3000');
+		console.log('Listening on port 3000...');
 	});
 };
 
