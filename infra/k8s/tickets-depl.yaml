@@ -23,6 +23,16 @@ spec:
            key: JWT_KEY
        - name: MONGO_URI
          value: 'mongodb://tickets-mongo-srv:27017/tickets'
+       - name: NATS_URI
+         value: 'http://nats-srv:4222'
+       - name: NATS_CLUSTER_ID
+         value: 'ticketing'
+       - name: NATS_CLIENT_ID
+         valueFrom:
+          fieldRef:
+           fieldPath:
+            metadata.name
+            # This assings the current pod id/name to that env variable
 ---
 apiVersion: v1
 kind: Service

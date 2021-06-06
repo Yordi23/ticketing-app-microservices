@@ -3,15 +3,21 @@ import { app } from './app';
 import { natsWrapper } from './nats-wrapper';
 
 const start = async () => {
-	if (!process.env.JWT_KEY || !process.env.MONGO_URI) {
+	if (
+		!process.env.JWT_KEY ||
+		!process.env.MONGO_URI ||
+		!process.env.NATS_URI ||
+		!process.env.NATS_CLUSTER_ID ||
+		!process.env.NATS_CLIENT_ID
+	) {
 		throw new Error('Env variable not defined');
 	}
 
 	try {
 		await natsWrapper.connect(
-			'ticketing',
-			'randomid',
-			'http://nats-srv:4222'
+			process.env.NATS_CLUSTER_ID,
+			process.env.NATS_CLIENT_ID,
+			process.env.NATS_URI
 		);
 
 		natsWrapper.client.on('close', () => {
