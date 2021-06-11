@@ -1,5 +1,6 @@
 import { OrderStatus } from '@yd-ticketing-app/common';
 import mongoose from 'mongoose';
+import { TicketDoc } from './ticket';
 
 // This interface describe the properties needed to create an Order
 interface OrderAttrs {
