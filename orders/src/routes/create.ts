@@ -1,10 +1,15 @@
 import {
+	BadRequestError,
+	NotFoundError,
+	OrderStatus,
 	requireAuth,
 	validateRequest,
 } from '@yd-ticketing-app/common';
 import express, { Request, Response } from 'express';
 import { body } from 'express-validator';
 import mongoose from 'mongoose';
+import { Order } from '../models/order';
+import { Ticket } from '../models/ticket';
 import { natsWrapper } from '../nats-wrapper';
 
 const router = express.Router();
@@ -21,20 +26,31 @@ router.post(
 	],
 	validateRequest,
 	async (req: Request, res: Response) => {
-		// const { title, price } = req.body;
-		// const ticket = Ticket.build({
-		// 	title,
-		// 	price,
-		// 	userId: req.currentUser!.id,
-		// });
-		// await ticket.save();
-		// new TicketCreatedPublisher(natsWrapper.client).publish({
-		// 	id: ticket.id,
-		// 	price: ticket.price,
-		// 	title: ticket.title,
-		// 	userId: ticket.userId,
-		// });
-		// res.status(201).send(ticket);
+		const { ticketId } = req.body;
+
+		const ticket = await Ticket.findById(ticketId);
+
+		if (!ticket) {
+			throw new NotFoundError();
+		}
+
+		if (await ticket.isReserved()) {
+			throw new BadRequestError('Ticket already reserved');
+		}
+
+		const expiresAt = new Date();
+		expiresAt.setMinutes(expiresAt.getMinutes() * 2);
+
+		const order = Order.build({
+			userId: req.currentUser!.id,
+			ticket: ticket.id,
+			status: OrderStatus.CREATED,
+			expiresAt,
+		});
+
+		await order.save();
+
+		res.status(201).send(order);
 	}
 );
 
