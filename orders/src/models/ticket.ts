@@ -1,7 +1,12 @@
 import { OrderStatus } from '@yd-ticketing-app/common';
 import mongoose from 'mongoose';
 import { Order } from './order';
+import { updateIfCurrentPlugin } from 'mongoose-update-if-current';
 
+interface findByEventInput {
+	id: string;
+	version: number;
+}
 // This interface describe the properties needed to create a Ticket
 interface TicketAttrs {
 	_id?: string;
@@ -12,12 +17,14 @@ interface TicketAttrs {
 //This interface will describe the properties that a Ticket model has
 interface TicketModel extends mongoose.Model<TicketDoc> {
 	build(attrs: TicketAttrs): TicketDoc;
+	findByEvent(event: findByEventInput): Promise<TicketDoc | null>;
 }
 
 // This interface describes the properties that a Ticket Document has
 export interface TicketDoc extends mongoose.Document {
 	title: string;
 	price: number;
+	version: number;
 	isReserved(): Promise<boolean>;
 }
 
@@ -40,11 +47,20 @@ const ticketSchema = new mongoose.Schema(
 				ret.id = ret._id;
 
 				delete ret._id;
-				delete ret.__v;
 			},
 		},
 	}
 );
+
+ticketSchema.set('versionKey', 'version');
+ticketSchema.plugin(updateIfCurrentPlugin);
+
+ticketSchema.statics.findByEvent = (event: findByEventInput) => {
+	return Ticket.findOne({
+		_id: event.id,
+		version: event.version - 1,
+	});
+};
 
 ticketSchema.statics.build = (attrs: TicketAttrs) => {
 	return new Ticket(attrs);
