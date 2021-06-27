@@ -9,7 +9,7 @@ interface findByEventInput {
 }
 // This interface describe the properties needed to create a Ticket
 interface TicketAttrs {
-	_id?: string;
+	_id: string;
 	title: string;
 	price: number;
 }

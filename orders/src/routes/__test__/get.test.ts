@@ -2,10 +2,11 @@ import request from 'supertest';
 import { app } from '../../app';
 import { Ticket } from '../../models/ticket';
 import { deleteOrderRouter } from '../delete';
-import mongoose from 'mongoose';
+import { Types } from 'mongoose';
 
 const createTicket = async () => {
 	const ticket = Ticket.build({
+		_id: Types.ObjectId().toHexString(),
 		title: 'concert',
 		price: 25,
 	});
@@ -54,7 +55,7 @@ it('returns an 404 code error if the provided id does not match any order', asyn
 		.expect(201);
 
 	await request(app)
-		.get('/api/orders/' + mongoose.Types.ObjectId().toHexString())
+		.get('/api/orders/' + Types.ObjectId().toHexString())
 		.set('Cookie', user)
 		.expect(404);
 });

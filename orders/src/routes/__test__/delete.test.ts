@@ -1,5 +1,5 @@
 import { OrderStatus } from '@yd-ticketing-app/common';
-import mongoose from 'mongoose';
+import { Types } from 'mongoose';
 import request from 'supertest';
 import { app } from '../../app';
 import { Order } from '../../models/order';
@@ -8,6 +8,7 @@ import { natsWrapper } from '../../nats-wrapper';
 
 const createTicket = async () => {
 	const ticket = Ticket.build({
+		_id: Types.ObjectId().toHexString(),
 		title: 'concert',
 		price: 25,
 	});
