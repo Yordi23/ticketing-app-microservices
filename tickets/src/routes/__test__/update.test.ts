@@ -1,4 +1,5 @@
-import mongoose from 'mongoose';
+import { response } from 'express';
+import mongoose, { Types } from 'mongoose';
 import request from 'supertest';
 import { app } from '../../app';
 import { Ticket } from '../../models/ticket';
@@ -141,4 +142,33 @@ it('publishes an event', async () => {
 		.send(updateTicketInput);
 
 	expect(natsWrapper.client.publish).toHaveBeenCalled();
+});
+
+//TODO: Verify this test
+it('returns a 400 if an tried to update a reserved ticket', async () => {
+	const createTicketInput = {
+		title: 'test',
+		price: 20,
+	};
+
+	const cookie = global.signin();
+
+	const createTicketResponse = await request(app)
+		.post('/api/tickets')
+		.set('Cookie', cookie)
+		.send(createTicketInput)
+		.expect(201);
+
+	await Ticket.findByIdAndUpdate(createTicketResponse.body.id, {
+		orderId: mongoose.Types.ObjectId().toHexString(),
+	});
+
+	await request(app)
+		.put(`/api/tickets/${createTicketResponse.body.id}`)
+		.set('Cookie', cookie)
+		.send({
+			title: '',
+			price: 5,
+		})
+		.expect(400);
 });
