@@ -40,7 +40,7 @@ router.post(
 		}
 
 		const expiresAt = new Date();
-		expiresAt.setMinutes(expiresAt.getMinutes() * 2);
+		expiresAt.setMinutes(expiresAt.getMinutes() + 2);
 
 		const order = Order.build({
 			userId: req.currentUser!.id,
