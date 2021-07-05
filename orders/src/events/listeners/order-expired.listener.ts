@@ -15,17 +15,17 @@ export class OrderExpiredListener extends Listener<OrderExpiredEvent> {
 	queueGroupName = queueGroupName;
 
 	async onMessage(data: OrderExpiredEvent['data'], msg: Message) {
-		const order = await Order.findByIdAndUpdate(
-			data.orderId,
-			{
-				status: OrderStatus.CANCELLED,
-			},
-			{ new: true }
-		);
+		const order = await Order.findById(data.orderId);
 
 		if (!order) {
 			throw new NotFoundError();
 		}
+
+		if (order.status === OrderStatus.COMPLETED) return msg.ack();
+
+		order.set({
+			status: OrderStatus.CANCELLED,
+		});
 
 		new OrderCancelledPublisher(this.client).publish({
 			id: order.id,
